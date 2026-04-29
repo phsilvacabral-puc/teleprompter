@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teleprompter</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <!-- Background Camera Video -->
+    <video id="camera-stream" autoplay muted playsinline></video>
+    <div id="camera-overlay"></div>
+
+    <div class="app-container">
+      
+      <!-- Split View Layout -->
+      <main class="split-view">
+        
+        <!-- Left Side: Script Editor -->
+        <section class="editor-section panel-glass">
+          <header>
+            <h1>Teleprompter</h1>
+            <p>Escreva seu roteiro abaixo</p>
+          </header>
+          <textarea id="script-input" placeholder="Digite seu texto aqui... O texto aparecerá na área de rolagem à direita."></textarea>
+        </section>
+
+        <!-- Right Side: Teleprompter Display -->
+        <section class="prompter-section panel-glass">
+          <div class="prompter-container">
+            <!-- Pointers/Indicators -->
+            <div class="focus-indicator left"></div>
+            <div class="focus-indicator right"></div>
+            
+            <div class="prompter-content-wrapper" id="prompter-wrapper">
+              <div id="prompter-text" class="scrolling-text">
+                <!-- Text will be injected here via JS -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+    <!-- Permission Modal -->
+    <div id="permission-overlay" class="permission-overlay">
+      <div class="permission-dialog panel-glass">
+        <h2>Permissão Necessária</h2>
+        <p>Para utilizar o teleprompter com gravação, precisamos de acesso à sua câmera e microfone.</p>
+        <button id="grant-permission-btn" class="btn primary">Conceder Permissão</button>
+      </div>
+    </div>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
