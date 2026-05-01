@@ -8,12 +8,20 @@ document.addEventListener('DOMContentLoaded', () => {
   
   const scriptInput = document.getElementById('script-input');
   const prompterText = document.getElementById('prompter-text');
+  const prompterWrapper = document.getElementById('prompter-wrapper');
+  const prompterTextClone = prompterText.cloneNode(true);
+  prompterTextClone.removeAttribute('id');
+  prompterTextClone.setAttribute('aria-hidden', 'true');
+  prompterWrapper.appendChild(prompterTextClone);
   
   // State
   let isScrolling = true;
-  let scrollPosition = 0;
+  let scrollOffset = 0;
   let animationFrameId = null;
-  const scrollSpeed = 1.5; // pixels per frame
+  let lastFrameTime = null;
+  let cycleDistance = 0;
+  let needsMeasurement = true;
+  const SCROLL_SPEED_PX_PER_SECOND = 90;
   
   // 1. Camera & Mic Permission
   grantPermissionBtn.addEventListener('click', async () => {
@@ -37,29 +45,102 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 2. Sync Text
   scriptInput.addEventListener('input', (e) => {
-    prompterText.textContent = e.target.value;
+    updatePrompterText(e.target.value);
   });
 
   // 3. Scrolling Logic
-  const animateScroll = () => {
-    if (!isScrolling) return;
-    
-    scrollPosition -= scrollSpeed;
-    
-    // Check if we scrolled past the top
-    const textHeight = prompterText.getBoundingClientRect().height;
-    const containerHeight = prompterText.parentElement.getBoundingClientRect().height;
-    
-    // Stop condition: when text is completely out of view
-    // Position is initially at top: 100% of container, so 0 transform is container height
-    if (-scrollPosition > textHeight + containerHeight) {
-      scrollPosition = 0; // reset
+  const updatePrompterText = (text) => {
+    prompterText.textContent = text;
+    prompterTextClone.textContent = text;
+    needsMeasurement = true;
+  };
+
+  const measureScrollCycle = () => {
+    const hasText = prompterText.textContent.trim().length > 0;
+
+    if (!hasText) {
+      cycleDistance = 0;
+      scrollOffset = 0;
+      needsMeasurement = false;
+      return;
     }
-    
-    prompterText.style.transform = `translateY(${scrollPosition}px)`;
+
+    const textHeight = prompterText.getBoundingClientRect().height;
+    const wrapperHeight = prompterWrapper.getBoundingClientRect().height;
+
+    cycleDistance = textHeight + wrapperHeight;
+
+    if (cycleDistance > 0) {
+      scrollOffset %= cycleDistance;
+    }
+
+    needsMeasurement = false;
+  };
+
+  const renderPrompterPosition = () => {
+    if (needsMeasurement) {
+      measureScrollCycle();
+    }
+
+    if (cycleDistance === 0) {
+      prompterText.style.transform = 'translate3d(0, 0, 0)';
+      prompterTextClone.style.transform = 'translate3d(0, 0, 0)';
+      return;
+    }
+
+    const translateY = -scrollOffset;
+    prompterText.style.transform = `translate3d(0, ${translateY}px, 0)`;
+    prompterTextClone.style.transform = `translate3d(0, ${translateY + cycleDistance}px, 0)`;
+  };
+
+  const animateScroll = (timestamp) => {
+    if (!isScrolling) {
+      lastFrameTime = null;
+      animationFrameId = requestAnimationFrame(animateScroll);
+      return;
+    }
+
+    if (lastFrameTime === null) {
+      lastFrameTime = timestamp;
+    }
+
+    const elapsedSeconds = Math.min((timestamp - lastFrameTime) / 1000, 0.1);
+    lastFrameTime = timestamp;
+
+    if (needsMeasurement) {
+      measureScrollCycle();
+    }
+
+    if (cycleDistance > 0) {
+      scrollOffset = (scrollOffset + SCROLL_SPEED_PX_PER_SECOND * elapsedSeconds) % cycleDistance;
+    }
+
+    renderPrompterPosition();
     animationFrameId = requestAnimationFrame(animateScroll);
   };
 
+  const markForMeasurement = () => {
+    needsMeasurement = true;
+  };
+
+  if ('ResizeObserver' in window) {
+    const resizeObserver = new ResizeObserver(markForMeasurement);
+    resizeObserver.observe(prompterWrapper);
+    resizeObserver.observe(prompterText);
+  } else {
+    window.addEventListener('resize', markForMeasurement);
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    lastFrameTime = null;
+
+    if (!document.hidden) {
+      needsMeasurement = true;
+    }
+  });
+
   // Iniciar rolagem automaticamente
-  animateScroll();
+  updatePrompterText(scriptInput.value);
+  renderPrompterPosition();
+  animationFrameId = requestAnimationFrame(animateScroll);
 });
