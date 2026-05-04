@@ -120,6 +120,12 @@ body, html {
   color: rgba(255, 255, 255, 0.2);
 }
 
+.editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
 /* Right Section: Prompter */
 .prompter-section {
   flex: 2;

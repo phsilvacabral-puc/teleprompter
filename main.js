@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const cameraStream = document.getElementById('camera-stream');
   
   const scriptInput = document.getElementById('script-input');
+  const saveScriptBtn = document.getElementById('save-script-btn');
   const prompterText = document.getElementById('prompter-text');
   const prompterWrapper = document.getElementById('prompter-wrapper');
   const prompterTextClone = prompterText.cloneNode(true);
@@ -22,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let cycleDistance = 0;
   let needsMeasurement = true;
   const SCROLL_SPEED_PX_PER_SECOND = 90;
+  const SAVED_SCRIPT_STORAGE_KEY = 'teleprompter:script';
   
   // 1. Camera & Mic Permission
   grantPermissionBtn.addEventListener('click', async () => {
@@ -43,9 +45,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 2. Sync Text
-  scriptInput.addEventListener('input', (e) => {
-    updatePrompterText(e.target.value);
+  // 2. Save Text
+  const loadSavedScript = () => {
+    try {
+      return window.localStorage.getItem(SAVED_SCRIPT_STORAGE_KEY);
+    } catch (err) {
+      console.error('Erro ao carregar o texto salvo.', err);
+      return null;
+    }
+  };
+
+  const saveScript = (text) => {
+    try {
+      window.localStorage.setItem(SAVED_SCRIPT_STORAGE_KEY, text);
+    } catch (err) {
+      console.error('Erro ao salvar o texto.', err);
+      alert('Não foi possível salvar o texto neste navegador.');
+    }
+  };
+
+  saveScriptBtn.addEventListener('click', () => {
+    const scriptText = scriptInput.value;
+
+    saveScript(scriptText);
+    scrollOffset = 0;
+    updatePrompterText(scriptText);
+    renderPrompterPosition();
   });
 
   // 3. Scrolling Logic
@@ -139,8 +164,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Iniciar rolagem automaticamente
-  updatePrompterText(scriptInput.value);
+  // Iniciar rolagem automaticamente com o texto salvo
+  const savedScript = loadSavedScript();
+  const initialScript = savedScript ?? scriptInput.value;
+
+  scriptInput.value = initialScript;
+  updatePrompterText(initialScript);
   renderPrompterPosition();
   animationFrameId = requestAnimationFrame(animateScroll);
 });
