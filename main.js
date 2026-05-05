@@ -1,32 +1,37 @@
-import './style.css';
+// Removido o import de CSS que quebra o navegador nativo
 
 document.addEventListener('DOMContentLoaded', () => {
   // Elements
   const permissionOverlay = document.getElementById('permission-overlay');
   const grantPermissionBtn = document.getElementById('grant-permission-btn');
   const cameraStream = document.getElementById('camera-stream');
+  const playBtn = document.getElementById('play-btn'); // Selecionando o botão de play
   
   const scriptInput = document.getElementById('script-input');
   const saveScriptBtn = document.getElementById('save-script-btn');
   const prompterText = document.getElementById('prompter-text');
   const prompterWrapper = document.getElementById('prompter-wrapper');
+  
+  // Clone para efeito de loop infinito
   const prompterTextClone = prompterText.cloneNode(true);
   prompterTextClone.removeAttribute('id');
   prompterTextClone.setAttribute('aria-hidden', 'true');
   prompterWrapper.appendChild(prompterTextClone);
   
-  // State
-  let isScrolling = true;
+  // State - Começa pausado para você poder clicar no Play
+  let isScrolling = false; 
   let scrollOffset = 0;
   let animationFrameId = null;
   let lastFrameTime = null;
   let cycleDistance = 0;
   let needsMeasurement = true;
+  
   const SCROLL_SPEED_PX_PER_SECOND = 90;
   const SAVED_SCRIPT_STORAGE_KEY = 'teleprompter:script';
   
   // 1. Camera & Mic Permission
   grantPermissionBtn.addEventListener('click', async () => {
+    console.log("Botão de permissão clicado!"); // Para você ver no console (F12)
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: true, 
@@ -36,44 +41,37 @@ document.addEventListener('DOMContentLoaded', () => {
       cameraStream.srcObject = stream;
       cameraStream.style.opacity = '1';
       
-      // Hide permission overlay
-      permissionOverlay.classList.add('hidden');
+      // Esconde o modal de permissão
+      permissionOverlay.style.display = 'none';
       
     } catch (err) {
-      console.error('Error accessing media devices.', err);
-      alert('Não foi possível acessar a câmera/microfone. Por favor, permita o acesso para utilizar o teleprompter.');
+      console.error('Erro ao acessar dispositivos.', err);
+      alert('Certifique-se de estar usando HTTPS ou Localhost e que a câmera não está em uso por outro App.');
     }
   });
 
-  // 2. Save Text
-  const loadSavedScript = () => {
-    try {
-      return window.localStorage.getItem(SAVED_SCRIPT_STORAGE_KEY);
-    } catch (err) {
-      console.error('Erro ao carregar o texto salvo.', err);
-      return null;
+  // Alternar Play/Pause
+  playBtn.addEventListener('click', () => {
+    isScrolling = !isScrolling;
+    playBtn.textContent = isScrolling ? '⏸️ Pause' : '▶️ Play';
+    if (isScrolling) {
+      lastFrameTime = performance.now(); // Reseta o tempo para não dar um "salto"
     }
-  };
+  });
 
-  const saveScript = (text) => {
-    try {
-      window.localStorage.setItem(SAVED_SCRIPT_STORAGE_KEY, text);
-    } catch (err) {
-      console.error('Erro ao salvar o texto.', err);
-      alert('Não foi possível salvar o texto neste navegador.');
-    }
+  // 2. Lógica de Salvar
+  const loadSavedScript = () => {
+    return window.localStorage.getItem(SAVED_SCRIPT_STORAGE_KEY);
   };
 
   saveScriptBtn.addEventListener('click', () => {
     const scriptText = scriptInput.value;
-
-    saveScript(scriptText);
-    scrollOffset = 0;
+    window.localStorage.setItem(SAVED_SCRIPT_STORAGE_KEY, scriptText);
+    scrollOffset = 0; // Reseta o scroll ao salvar novo texto
     updatePrompterText(scriptText);
     renderPrompterPosition();
   });
 
-  // 3. Scrolling Logic
   const updatePrompterText = (text) => {
     prompterText.textContent = text;
     prompterTextClone.textContent = text;
@@ -81,95 +79,38 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const measureScrollCycle = () => {
-    const hasText = prompterText.textContent.trim().length > 0;
-
-    if (!hasText) {
-      cycleDistance = 0;
-      scrollOffset = 0;
-      needsMeasurement = false;
-      return;
-    }
-
     const textHeight = prompterText.getBoundingClientRect().height;
     const wrapperHeight = prompterWrapper.getBoundingClientRect().height;
-
     cycleDistance = textHeight + wrapperHeight;
-
-    if (cycleDistance > 0) {
-      scrollOffset %= cycleDistance;
-    }
-
     needsMeasurement = false;
   };
 
   const renderPrompterPosition = () => {
-    if (needsMeasurement) {
-      measureScrollCycle();
-    }
-
-    if (cycleDistance === 0) {
-      prompterText.style.transform = 'translate3d(0, 0, 0)';
-      prompterTextClone.style.transform = 'translate3d(0, 0, 0)';
-      return;
-    }
-
+    if (needsMeasurement) measureScrollCycle();
     const translateY = -scrollOffset;
     prompterText.style.transform = `translate3d(0, ${translateY}px, 0)`;
     prompterTextClone.style.transform = `translate3d(0, ${translateY + cycleDistance}px, 0)`;
   };
 
   const animateScroll = (timestamp) => {
-    if (!isScrolling) {
-      lastFrameTime = null;
-      animationFrameId = requestAnimationFrame(animateScroll);
-      return;
-    }
-
-    if (lastFrameTime === null) {
+    if (isScrolling) {
+      if (lastFrameTime === null) lastFrameTime = timestamp;
+      const elapsedSeconds = (timestamp - lastFrameTime) / 1000;
       lastFrameTime = timestamp;
+
+      if (cycleDistance > 0) {
+        scrollOffset = (scrollOffset + SCROLL_SPEED_PX_PER_SECOND * elapsedSeconds) % cycleDistance;
+      }
+      renderPrompterPosition();
+    } else {
+      lastFrameTime = null; // Garante que a conta recomeça do zero ao despausar
     }
-
-    const elapsedSeconds = Math.min((timestamp - lastFrameTime) / 1000, 0.1);
-    lastFrameTime = timestamp;
-
-    if (needsMeasurement) {
-      measureScrollCycle();
-    }
-
-    if (cycleDistance > 0) {
-      scrollOffset = (scrollOffset + SCROLL_SPEED_PX_PER_SECOND * elapsedSeconds) % cycleDistance;
-    }
-
-    renderPrompterPosition();
     animationFrameId = requestAnimationFrame(animateScroll);
   };
 
-  const markForMeasurement = () => {
-    needsMeasurement = true;
-  };
-
-  if ('ResizeObserver' in window) {
-    const resizeObserver = new ResizeObserver(markForMeasurement);
-    resizeObserver.observe(prompterWrapper);
-    resizeObserver.observe(prompterText);
-  } else {
-    window.addEventListener('resize', markForMeasurement);
-  }
-
-  document.addEventListener('visibilitychange', () => {
-    lastFrameTime = null;
-
-    if (!document.hidden) {
-      needsMeasurement = true;
-    }
-  });
-
-  // Iniciar rolagem automaticamente com o texto salvo
-  const savedScript = loadSavedScript();
-  const initialScript = savedScript ?? scriptInput.value;
-
-  scriptInput.value = initialScript;
-  updatePrompterText(initialScript);
-  renderPrompterPosition();
+  // Inicialização
+  const savedScript = loadSavedScript() || scriptInput.value;
+  scriptInput.value = savedScript;
+  updatePrompterText(savedScript);
   animationFrameId = requestAnimationFrame(animateScroll);
 });
