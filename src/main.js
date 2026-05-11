@@ -57,6 +57,33 @@ const grantPermissionBtn = document.getElementById('grant-permission-btn');
 const cameraStream = document.getElementById('camera-stream');
 
 const scriptInput = document.getElementById('script-input');
+
+
+const timeDisplay = document.createElement("p");
+timeDisplay.id = "time-estimate";
+timeDisplay.style.marginTop = "10px";
+timeDisplay.style.fontSize = "14px";
+timeDisplay.style.opacity = "0.8";
+scriptInput.parentElement.appendChild(timeDisplay);
+
+
+const WPM = 150;
+
+function calcularTempoEstimado(texto) {
+  const palavras = texto.trim().split(/\s+/).filter(Boolean);
+  const totalPalavras = palavras.length;
+
+  const minutos = totalPalavras / WPM;
+  const segundosTotais = Math.round(minutos * 60);
+
+  const min = Math.floor(segundosTotais / 60);
+  const sec = segundosTotais % 60;
+
+  return { totalPalavras, min, sec };
+}
+
+
+
 const prompterText = document.getElementById('prompter-text');
 const playBtn = document.getElementById('play-btn');
 
@@ -83,12 +110,19 @@ grantPermissionBtn.addEventListener('click', async () => {
     alert('Não foi possível acessar a câmera/microfone.');
   }
 });
-
-
-// 2. Atualizar texto do teleprompter
 scriptInput.addEventListener('input', (e) => {
-  prompterText.textContent = e.target.value;
+  const texto = e.target.value;
+
+  // Atualiza o teleprompter
+  prompterText.textContent = texto;
+
+  // Calcula tempo estimado
+  const { totalPalavras, min, sec } = calcularTempoEstimado(texto);
+
+  timeDisplay.textContent =
+    `🕒 Estimativa: ${min} min ${sec}s — ${totalPalavras} palavras`;
 });
+
 
 
 // 3. Função de rolagem
