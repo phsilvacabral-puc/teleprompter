@@ -9,6 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
   
   const scriptInput = document.getElementById('script-input');
   const saveScriptBtn = document.getElementById('save-script-btn');
+  const fontSizeSlider = document.getElementById('font-size-slider');
+  const fontSizeValue = document.getElementById('font-size-value');
   const prompterText = document.getElementById('prompter-text');
   const prompterWrapper = document.getElementById('prompter-wrapper');
   
@@ -28,6 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
   
   const SCROLL_SPEED_PX_PER_SECOND = 90;
   const SAVED_SCRIPT_STORAGE_KEY = 'teleprompter:script';
+  const FONT_SIZE_STORAGE_KEY = 'teleprompter:font-size';
+  const FONT_SIZE_MIN = 16;
+  const FONT_SIZE_MAX = 120;
+  const DEFAULT_FONT_SIZE = 56;
   
   // 1. Camera & Mic Permission
   grantPermissionBtn.addEventListener('click', async () => {
@@ -64,6 +70,20 @@ document.addEventListener('DOMContentLoaded', () => {
     return window.localStorage.getItem(SAVED_SCRIPT_STORAGE_KEY);
   };
 
+  const clampFontSize = (value) => {
+    const fontSize = Number.parseInt(value, 10);
+
+    if (Number.isNaN(fontSize)) {
+      return DEFAULT_FONT_SIZE;
+    }
+
+    return Math.min(FONT_SIZE_MAX, Math.max(FONT_SIZE_MIN, fontSize));
+  };
+
+  const loadSavedFontSize = () => {
+    return clampFontSize(window.localStorage.getItem(FONT_SIZE_STORAGE_KEY));
+  };
+
   saveScriptBtn.addEventListener('click', () => {
     const scriptText = scriptInput.value;
     window.localStorage.setItem(SAVED_SCRIPT_STORAGE_KEY, scriptText);
@@ -92,6 +112,34 @@ document.addEventListener('DOMContentLoaded', () => {
     prompterTextClone.style.transform = `translate3d(0, ${translateY + cycleDistance}px, 0)`;
   };
 
+  const applyFontSize = (value, shouldPreserveScroll = false) => {
+    if (needsMeasurement) measureScrollCycle();
+
+    const previousCycleDistance = cycleDistance;
+    const scrollProgress = previousCycleDistance > 0 ? scrollOffset / previousCycleDistance : 0;
+    const fontSize = clampFontSize(value);
+
+    prompterText.style.fontSize = `${fontSize}px`;
+    prompterTextClone.style.fontSize = `${fontSize}px`;
+    fontSizeSlider.value = String(fontSize);
+    fontSizeValue.textContent = `${fontSize}px`;
+
+    needsMeasurement = true;
+
+    if (shouldPreserveScroll) {
+      measureScrollCycle();
+      scrollOffset = cycleDistance > 0 ? scrollProgress * cycleDistance : 0;
+    }
+
+    renderPrompterPosition();
+    return fontSize;
+  };
+
+  fontSizeSlider.addEventListener('input', (event) => {
+    const fontSize = applyFontSize(event.target.value, true);
+    window.localStorage.setItem(FONT_SIZE_STORAGE_KEY, String(fontSize));
+  });
+
   const animateScroll = (timestamp) => {
     if (isScrolling) {
       if (lastFrameTime === null) lastFrameTime = timestamp;
@@ -110,7 +158,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Inicialização
   const savedScript = loadSavedScript() || scriptInput.value;
+  const savedFontSize = loadSavedFontSize();
   scriptInput.value = savedScript;
   updatePrompterText(savedScript);
+  applyFontSize(savedFontSize);
   animationFrameId = requestAnimationFrame(animateScroll);
 });

@@ -120,6 +120,41 @@ body, html {
   color: rgba(255, 255, 255, 0.2);
 }
 
+.font-size-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--glass-border);
+}
+
+.font-size-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.875rem;
+}
+
+.font-size-header label {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+#font-size-value {
+  min-width: 48px;
+  color: var(--text-muted);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#font-size-slider {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
 .editor-actions {
   display: flex;
   justify-content: flex-end;

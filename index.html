@@ -32,6 +32,13 @@
             <p>Escreva seu roteiro abaixo</p>
           </header>
           <textarea id="script-input" placeholder="Digite seu texto aqui... O texto aparecerá na área de rolagem à direita."></textarea>
+          <div class="font-size-control">
+            <div class="font-size-header">
+              <label for="font-size-slider">Tamanho da fonte</label>
+              <span id="font-size-value">56px</span>
+            </div>
+            <input id="font-size-slider" type="range" min="16" max="120" step="1" value="56" />
+          </div>
           <div class="editor-actions">
             <button id="save-script-btn" class="btn primary" type="button">Salvar texto</button>
           </div>
