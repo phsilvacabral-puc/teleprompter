@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   prompterTextClone.removeAttribute('id');
   prompterTextClone.setAttribute('aria-hidden', 'true');
   prompterWrapper.appendChild(prompterTextClone);
+  const readingTimeDisplay = document.getElementById('reading-time-display');
   
   // State - Começa pausado para você poder clicar no Play
   let isScrolling = false; 
@@ -34,6 +35,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const FONT_SIZE_MIN = 16;
   const FONT_SIZE_MAX = 120;
   const DEFAULT_FONT_SIZE = 56;
+
+  // Função para calcular e atualizar o tempo de leitura na tela
+  const updateReadingTime = (text) => {
+    const WORDS_PER_MINUTE = 150; 
+    
+    const wordsArray = text.trim().split(/\s+/).filter(word => word.length > 0);
+    const wordCount = wordsArray.length;
+    
+    if (wordCount === 0) {
+      readingTimeDisplay.textContent = "00:00";
+      return;
+    }
+
+    const totalSeconds = Math.ceil((wordCount / WORDS_PER_MINUTE) * 60);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    const formattedMinutes = String(minutes).padStart(2, '0');
+    const formattedSeconds = String(seconds).padStart(2, '0');
+
+    readingTimeDisplay.textContent = `${formattedMinutes}:${formattedSeconds}`;
+  };
   
   // 1. Camera & Mic Permission
   grantPermissionBtn.addEventListener('click', async () => {
@@ -156,6 +179,10 @@ document.addEventListener('DOMContentLoaded', () => {
     animationFrameId = requestAnimationFrame(animateScroll);
   };
 
+  scriptInput.addEventListener('input', (event) => {
+    updateReadingTime(event.target.value);
+  });
+
   // Inicialização
   const savedScript = loadSavedScript() || scriptInput.value;
   const savedFontSize = loadSavedFontSize();
@@ -163,4 +190,5 @@ document.addEventListener('DOMContentLoaded', () => {
   updatePrompterText(savedScript);
   applyFontSize(savedFontSize);
   animationFrameId = requestAnimationFrame(animateScroll);
+  updateReadingTime(savedScript);  
 });
