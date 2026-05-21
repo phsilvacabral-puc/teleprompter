@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Alternar Play/Pause
   playBtn.addEventListener('click', () => {
     isScrolling = !isScrolling;
-    playBtn.textContent = isScrolling ? '⏸️ Pause' : '▶️ Play';
+    playBtn.textContent = isScrolling ? 'Pause' : 'Play';
     if (isScrolling) {
       lastFrameTime = performance.now(); // Reseta o tempo para não dar um "salto"
     }
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderPrompterPosition();
 
     isScrolling = true;
-    playBtn.textContent = '⏸️ Pause';
+    playBtn.textContent = 'Pause';
     lastFrameTime = performance.now(); // Evita salto ao retomar a animação
   });
 
