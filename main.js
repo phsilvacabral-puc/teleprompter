@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const grantPermissionBtn = document.getElementById('grant-permission-btn');
   const cameraStream = document.getElementById('camera-stream');
   const playBtn = document.getElementById('play-btn'); // Selecionando o botão de play
+  const replayBtn = document.getElementById('replay-btn'); // Botão de replay (rolagem mais lenta)
   
   const scriptInput = document.getElementById('script-input');
   const saveScriptBtn = document.getElementById('save-script-btn');
@@ -30,6 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let needsMeasurement = true;
   
   const SCROLL_SPEED_PX_PER_SECOND = 90;
+  const REPLAY_SPEED_FACTOR = 0.7; // Replay roda a 70% da velocidade atual
+  let scrollSpeed = SCROLL_SPEED_PX_PER_SECOND; // Velocidade atual (mutável)
   const SAVED_SCRIPT_STORAGE_KEY = 'teleprompter:script';
   const FONT_SIZE_STORAGE_KEY = 'teleprompter:font-size';
   const FONT_SIZE_MIN = 16;
@@ -86,6 +89,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isScrolling) {
       lastFrameTime = performance.now(); // Reseta o tempo para não dar um "salto"
     }
+  });
+
+  // Replay: reinicia a rolagem do começo a 70% da velocidade atual
+  replayBtn.addEventListener('click', () => {
+    scrollSpeed = SCROLL_SPEED_PX_PER_SECOND * REPLAY_SPEED_FACTOR;
+    scrollOffset = 0; // Volta o texto para o início
+    renderPrompterPosition();
+
+    isScrolling = true;
+    playBtn.textContent = '⏸️ Pause';
+    lastFrameTime = performance.now(); // Evita salto ao retomar a animação
   });
 
   // 2. Lógica de Salvar
@@ -170,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
       lastFrameTime = timestamp;
 
       if (cycleDistance > 0) {
-        scrollOffset = (scrollOffset + SCROLL_SPEED_PX_PER_SECOND * elapsedSeconds) % cycleDistance;
+        scrollOffset = (scrollOffset + scrollSpeed * elapsedSeconds) % cycleDistance;
       }
       renderPrompterPosition();
     } else {
