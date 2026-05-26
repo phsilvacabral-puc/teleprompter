@@ -294,5 +294,47 @@ code {
     border-right-color: var(--border);
   }
 
+/* COLOR PICKER */
+.color-picker-container {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--code-bg);
+}
+
+.color-picker-container input[type="color"] {
+  width: 45px;
+  height: 45px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+#color-hex {
+  width: 100px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  font-family: var(--mono);
+}
+
+.rgb-group {
+  display: grid;
+  grid-template-columns: 20px 1fr 40px;
+  gap: 6px 10px;
+  align-items: center;
+}
+
+.rgb-group input[type="range"] {
+  width: 100%;
+}
+
+
  
 }
