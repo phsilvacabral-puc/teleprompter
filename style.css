@@ -168,6 +168,16 @@ body, html {
   overflow: hidden;
 }
 
+.prompter-layout-container {
+  flex: 1;
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
 .prompter-container {
   flex: 1;
   position: relative;
