@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const cameraStream = document.getElementById('camera-stream');
   const playBtn = document.getElementById('play-btn'); // Selecionando o botão de play
   const replayBtn = document.getElementById('replay-btn'); // Botão de replay (rolagem mais lenta)
+  const fullscreenBtn = document.getElementById('fullscreen-btn');
   
   const scriptInput = document.getElementById('script-input');
   const saveScriptBtn = document.getElementById('save-script-btn');
@@ -38,6 +39,35 @@ document.addEventListener('DOMContentLoaded', () => {
   const FONT_SIZE_MIN = 16;
   const FONT_SIZE_MAX = 120;
   const DEFAULT_FONT_SIZE = 56;
+
+  const isFullscreenSupported = () => {
+    return Boolean(document.fullscreenEnabled && document.documentElement.requestFullscreen && document.exitFullscreen);
+  };
+
+  const updateFullscreenButton = () => {
+    const isFullscreen = Boolean(document.fullscreenElement);
+
+    fullscreenBtn.textContent = isFullscreen ? 'Sair da tela cheia' : 'Tela cheia';
+    fullscreenBtn.setAttribute('aria-pressed', String(isFullscreen));
+  };
+
+  const toggleFullscreen = async () => {
+    if (!isFullscreenSupported()) {
+      alert('Seu navegador não oferece suporte ao modo de tela cheia.');
+      return;
+    }
+
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await document.documentElement.requestFullscreen();
+      }
+    } catch (err) {
+      console.error('Erro ao alternar modo de tela cheia.', err);
+      alert('Não foi possível alternar o modo de tela cheia.');
+    }
+  };
 
   // Função para calcular e atualizar o tempo de leitura na tela
   const updateReadingTime = (text) => {
@@ -101,6 +131,9 @@ document.addEventListener('DOMContentLoaded', () => {
     playBtn.textContent = 'Pause';
     lastFrameTime = performance.now(); // Evita salto ao retomar a animação
   });
+
+  fullscreenBtn.addEventListener('click', toggleFullscreen);
+  document.addEventListener('fullscreenchange', updateFullscreenButton);
 
   // 2. Lógica de Salvar
   const loadSavedScript = () => {
@@ -204,5 +237,6 @@ document.addEventListener('DOMContentLoaded', () => {
   updatePrompterText(savedScript);
   applyFontSize(savedFontSize);
   animationFrameId = requestAnimationFrame(animateScroll);
+  updateFullscreenButton();
   updateReadingTime(savedScript);  
 });

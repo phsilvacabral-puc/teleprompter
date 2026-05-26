@@ -242,6 +242,10 @@ body, html {
   margin-bottom: 1rem;
 }
 
+#fullscreen-btn {
+  min-width: 10.5rem;
+}
+
 .btn {
   background: rgba(255, 255, 255, 0.1);
   color: var(--text-main);
@@ -268,6 +272,11 @@ body, html {
 .btn.primary:hover {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
+}
+
+.btn[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 /* Permission Overlay */
