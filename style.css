@@ -155,6 +155,55 @@ body, html {
   cursor: pointer;
 }
 
+.reading-position-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--glass-border);
+}
+
+.reading-position-header {
+  font-size: 0.875rem;
+}
+
+.reading-position-header label {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.reading-position-options {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.position-btn {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  border: 1px solid var(--glass-border);
+  padding: 0.6rem 0.5rem;
+  border-radius: 10px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.position-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  transform: translateY(-1px);
+}
+
+.position-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
 .editor-actions {
   display: flex;
   justify-content: flex-end;
@@ -166,6 +215,24 @@ body, html {
   flex: 2;
   position: relative;
   overflow: hidden;
+}
+
+/* Box de exibição do texto: menor e reposicionável (topo/centro/embaixo) */
+.split-view > .prompter-section {
+  height: 60%;
+  align-self: center;
+}
+
+.split-view > .prompter-section.position-top {
+  align-self: flex-start;
+}
+
+.split-view > .prompter-section.position-center {
+  align-self: center;
+}
+
+.split-view > .prompter-section.position-bottom {
+  align-self: flex-end;
 }
 
 .prompter-layout-container {

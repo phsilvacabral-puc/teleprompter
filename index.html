@@ -46,6 +46,16 @@
             </div>
             <input id="font-size-slider" type="range" min="16" max="120" step="1" value="56" />
           </div>
+          <div class="reading-position-control">
+            <div class="reading-position-header">
+              <label>Posição do texto</label>
+            </div>
+            <div class="reading-position-options" role="group" aria-label="Posição do texto">
+              <button type="button" class="position-btn" data-position="top" aria-pressed="false">Topo</button>
+              <button type="button" class="position-btn active" data-position="center" aria-pressed="true">Centro</button>
+              <button type="button" class="position-btn" data-position="bottom" aria-pressed="false">Embaixo</button>
+            </div>
+          </div>
           <div class="editor-actions" style="margin-top: 20px; display: flex; gap: 160px;">
             <button id="play-btn" class="btn primary" type="button" >Play</button>
             <button id="save-script-btn" class="btn primary" type="button">Salvar texto</button>

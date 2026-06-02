@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const fontSizeValue = document.getElementById('font-size-value');
   const prompterText = document.getElementById('prompter-text');
   const prompterWrapper = document.getElementById('prompter-wrapper');
+  const positionButtons = Array.from(document.querySelectorAll('.position-btn'));
+  const prompterSection = prompterWrapper.closest('.prompter-section');
   
   // Clone para efeito de loop infinito
   const prompterTextClone = prompterText.cloneNode(true);
@@ -39,6 +41,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const FONT_SIZE_MIN = 16;
   const FONT_SIZE_MAX = 120;
   const DEFAULT_FONT_SIZE = 56;
+
+  // Posição do box do prompter: cada opção aplica uma classe que reposiciona o box
+  const READING_POSITION_CLASSES = {
+    top: 'position-top',
+    center: 'position-center',
+    bottom: 'position-bottom',
+  };
+  const READING_POSITION_STORAGE_KEY = 'teleprompter:reading-position';
+  const DEFAULT_READING_POSITION = 'center';
 
   const isFullscreenSupported = () => {
     return Boolean(document.fullscreenEnabled && document.documentElement.requestFullscreen && document.exitFullscreen);
@@ -154,6 +165,11 @@ document.addEventListener('DOMContentLoaded', () => {
     return clampFontSize(window.localStorage.getItem(FONT_SIZE_STORAGE_KEY));
   };
 
+  const loadSavedReadingPosition = () => {
+    const stored = window.localStorage.getItem(READING_POSITION_STORAGE_KEY);
+    return READING_POSITION_CLASSES[stored] ? stored : DEFAULT_READING_POSITION;
+  };
+
   saveScriptBtn.addEventListener('click', () => {
     const scriptText = scriptInput.value;
     window.localStorage.setItem(SAVED_SCRIPT_STORAGE_KEY, scriptText);
@@ -210,6 +226,32 @@ document.addEventListener('DOMContentLoaded', () => {
     window.localStorage.setItem(FONT_SIZE_STORAGE_KEY, String(fontSize));
   });
 
+  const applyReadingPosition = (positionKey) => {
+    const key = READING_POSITION_CLASSES[positionKey] ? positionKey : DEFAULT_READING_POSITION;
+
+    positionButtons.forEach((btn) => {
+      const isActive = btn.dataset.position === key;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', String(isActive));
+    });
+
+    // Reposiciona o box inteiro do prompter (topo/centro/embaixo)
+    prompterSection.classList.remove(...Object.values(READING_POSITION_CLASSES));
+    prompterSection.classList.add(READING_POSITION_CLASSES[key]);
+
+    // O box mudou de posição/tamanho: remede o ciclo de rolagem
+    needsMeasurement = true;
+    renderPrompterPosition();
+    return key;
+  };
+
+  positionButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const key = applyReadingPosition(btn.dataset.position);
+      window.localStorage.setItem(READING_POSITION_STORAGE_KEY, key);
+    });
+  });
+
   const animateScroll = (timestamp) => {
     if (isScrolling) {
       if (lastFrameTime === null) lastFrameTime = timestamp;
@@ -236,6 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
   scriptInput.value = savedScript;
   updatePrompterText(savedScript);
   applyFontSize(savedFontSize);
+  applyReadingPosition(loadSavedReadingPosition());
   animationFrameId = requestAnimationFrame(animateScroll);
   updateFullscreenButton();
   updateReadingTime(savedScript);  
