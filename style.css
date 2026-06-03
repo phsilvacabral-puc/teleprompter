@@ -111,8 +111,18 @@ body, html {
 }
 
 .font-size-header label, .reading-position-header label { color: var(--text-main); font-weight: 600; }
-#font-size-value, #slide-interval-value { color: var(--text-muted); font-variant-numeric: tabular-nums; }
-#font-size-slider, #slide-interval-slider { width: 100%; accent-color: var(--accent); cursor: pointer; }
+#font-size-value, #slide-interval-value, #scroll-speed-value { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+#font-size-slider, #slide-interval-slider, #scroll-speed-slider { width: 100%; accent-color: var(--accent); cursor: pointer; }
+
+.speed-level-labels {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  text-align: center;
+}
 
 .reading-position-options { display: flex; gap: 0.5rem; }
 .position-btn {

@@ -85,9 +85,23 @@
           <div id="scroll-speed-control" class="font-size-control" style="display: flex;">
             <div class="font-size-header">
               <label for="scroll-speed-slider">Velocidade da Rolagem</label>
-              <span id="scroll-speed-value">90</span>
+              <span id="scroll-speed-value">Média</span>
             </div>
-            <input id="scroll-speed-slider" type="range" min="10" max="300" step="5" value="90" />
+            <input id="scroll-speed-slider" type="range" min="0" max="4" step="1" value="2" list="scroll-speed-levels" />
+            <datalist id="scroll-speed-levels">
+              <option value="0" label="Muito baixa"></option>
+              <option value="1" label="Baixa"></option>
+              <option value="2" label="Média"></option>
+              <option value="3" label="Alta"></option>
+              <option value="4" label="Muito alta"></option>
+            </datalist>
+            <div class="speed-level-labels" aria-hidden="true">
+              <span>Muito baixa</span>
+              <span>Baixa</span>
+              <span>Média</span>
+              <span>Alta</span>
+              <span>Muito alta</span>
+            </div>
           </div>
 
           <div class="font-size-control">

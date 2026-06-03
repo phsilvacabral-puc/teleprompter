@@ -41,6 +41,27 @@ document.addEventListener('DOMContentLoaded', () => {
   const prevBtn = document.getElementById('prev-btn');
   const nextBtn = document.getElementById('next-btn');
   const slideCounter = document.getElementById('slide-counter');
+
+  const SCROLL_SPEED_LEVELS = [
+    { label: 'Muito baixa', speed: 30 },
+    { label: 'Baixa', speed: 60 },
+    { label: 'Média', speed: 90 },
+    { label: 'Alta', speed: 150 },
+    { label: 'Muito alta', speed: 220 },
+  ];
+
+  const getScrollSpeedLevel = (value) => {
+    const index = Number.parseInt(value, 10);
+    if (Number.isNaN(index)) return SCROLL_SPEED_LEVELS[2];
+    return SCROLL_SPEED_LEVELS[Math.min(SCROLL_SPEED_LEVELS.length - 1, Math.max(0, index))];
+  };
+
+  const applyScrollSpeedLevel = (value) => {
+    const speedLevel = getScrollSpeedLevel(value);
+    scrollSpeed = speedLevel.speed;
+    scrollSpeedValue.textContent = speedLevel.label;
+    scrollSpeedSlider.setAttribute('aria-valuetext', speedLevel.label);
+  };
   
   // Clone para efeito de loop infinito (Rolagem)
   const prompterTextClone = prompterText.cloneNode(true);
@@ -55,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let lastFrameTime = null;
   let cycleDistance = 0;
   let needsMeasurement = true;
-  let scrollSpeed = parseInt(scrollSpeedSlider.value, 10); // Inicializa com o valor do input
+  let scrollSpeed = getScrollSpeedLevel(scrollSpeedSlider.value).speed;
   
   // State - Slides
   let currentMode = 'scroll'; 
@@ -136,8 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- VELOCIDADE DA ROLAGEM ---
   scrollSpeedSlider.addEventListener('input', (e) => {
-    scrollSpeed = parseInt(e.target.value, 10);
-    scrollSpeedValue.textContent = scrollSpeed;
+    applyScrollSpeedLevel(e.target.value);
   });
 
   densitySelect.addEventListener('change', () => {
@@ -436,6 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
   else processSlides(savedScript);
   
   applyFontSize(clampFontSize(window.localStorage.getItem(FONT_SIZE_STORAGE_KEY)));
+  applyScrollSpeedLevel(scrollSpeedSlider.value);
   applyReadingPosition(window.localStorage.getItem(READING_POSITION_STORAGE_KEY) || DEFAULT_READING_POSITION);
   updateReadingTime(savedScript);
   updateFullscreenButton();
