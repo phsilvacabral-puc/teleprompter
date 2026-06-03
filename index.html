@@ -7,38 +7,89 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <!-- Background Camera Video -->
     <video id="camera-stream" autoplay muted playsinline></video>
     <div id="camera-overlay"></div>
 
-    
-
     <div class="app-container">
-          <!-- Right Side: Teleprompter Display -->
-<section class="prompter-section panel-glass">
-
-  <!-- Botões de controle -->
-  <div class="playback-controls">
-    <button id="replay-btn" class="btn" type="button">Replay</button>
-    <button id="fullscreen-btn" class="btn" type="button" aria-pressed="false">Tela cheia</button>
-  </div>
-
-  <div class="prompter-layout-container">
       
-      <!-- Split View Layout -->
+      <header class="top-bar panel-glass">
+        <div class="playback-controls">
+          <div id="scroll-controls" style="display: flex; gap: 10px;">
+            <button id="replay-btn" class="btn" type="button">Replay</button>
+          </div>
+          
+          <div id="slide-nav-controls" style="display: none; align-items: center; gap: 10px;">
+            <button id="prev-btn" class="btn" type="button">◀ Voltar</button>
+            <span id="slide-counter" style="font-weight: bold; min-width: 60px; text-align: center; font-size: 1.1rem;">1 / 1</span>
+            <button id="next-btn" class="btn" type="button">Avançar ▶</button>
+          </div>
+        </div>
+        
+        <button id="fullscreen-btn" class="btn" type="button" aria-pressed="false">Tela cheia</button>
+      </header>
+
       <main class="split-view">
         
-        <!-- Left Side: Script Editor -->
         <section class="editor-section panel-glass">
           <header>
             <h1>Teleprompter</h1>
             <p>Escreva seu roteiro abaixo</p>
           </header>
-          <textarea id="script-input" placeholder="Digite seu texto aqui... O texto aparecerá na área de rolagem à direita."></textarea>
-          <div class="reading-time-info" style="margin-top: 10px; margin-bottom: 20px; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+          
+          <textarea id="script-input" placeholder="Digite seu texto aqui..."></textarea>
+          
+          <div class="reading-time-info" style="margin-bottom: 10px; font-weight: bold; display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 1.2rem;">⏱️</span>
-            <span>Tempo estimado de leitura: <span id="reading-time-display" style="color: #4CAF50;">00:00</span></span>
+            <span>Tempo estimado: <span id="reading-time-display" style="color: #4CAF50;">00:00</span></span>
           </div>
+
+          <div class="display-mode-control" style="margin-top: 10px; border-top: 1px solid var(--glass-border); padding-top: 10px;">
+            <div class="font-size-header">
+              <label for="mode-select">Modo de Exibição</label>
+            </div>
+            <select id="mode-select" class="custom-select">
+              <option value="scroll">Rolagem Contínua</option>
+              <option value="slides">Slides Paginados</option>
+            </select>
+          </div>
+
+          <div id="density-control" style="display: none; margin-top: 10px;">
+            <div class="font-size-header">
+              <label for="density-select">Densidade (Slides)</label>
+            </div>
+            <select id="density-select" class="custom-select">
+              <option value="150">Pouco Texto</option>
+              <option value="300" selected>Médio</option>
+              <option value="600">Muito Texto</option>
+            </select>
+          </div>
+
+          <div id="slide-advance-control" style="display: none; margin-top: 10px;">
+            <div class="font-size-header">
+              <label for="slide-advance-select">Modo de Avanço (Slides)</label>
+            </div>
+            <select id="slide-advance-select" class="custom-select">
+              <option value="manual" selected>Manual (Setas/Botões)</option>
+              <option value="auto">Automático (Tempo)</option>
+            </select>
+          </div>
+
+          <div id="slide-interval-control" class="font-size-control" style="display: none;">
+            <div class="font-size-header">
+              <label for="slide-interval-slider">Intervalo (segundos)</label>
+              <span id="slide-interval-value">5s</span>
+            </div>
+            <input id="slide-interval-slider" type="range" min="1" max="60" step="1" value="5" />
+          </div>
+
+          <div id="scroll-speed-control" class="font-size-control" style="display: flex;">
+            <div class="font-size-header">
+              <label for="scroll-speed-slider">Velocidade da Rolagem</label>
+              <span id="scroll-speed-value">90</span>
+            </div>
+            <input id="scroll-speed-slider" type="range" min="10" max="300" step="5" value="90" />
+          </div>
+
           <div class="font-size-control">
             <div class="font-size-header">
               <label for="font-size-slider">Tamanho da fonte</label>
@@ -46,41 +97,43 @@
             </div>
             <input id="font-size-slider" type="range" min="16" max="120" step="1" value="56" />
           </div>
+
           <div class="reading-position-control">
             <div class="reading-position-header">
               <label>Posição do texto</label>
             </div>
-            <div class="reading-position-options" role="group" aria-label="Posição do texto">
-              <button type="button" class="position-btn" data-position="top" aria-pressed="false">Topo</button>
-              <button type="button" class="position-btn active" data-position="center" aria-pressed="true">Centro</button>
-              <button type="button" class="position-btn" data-position="bottom" aria-pressed="false">Embaixo</button>
+            <div class="reading-position-options" role="group">
+              <button type="button" class="position-btn" data-position="top">Topo</button>
+              <button type="button" class="position-btn active" data-position="center">Centro</button>
+              <button type="button" class="position-btn" data-position="bottom">Embaixo</button>
             </div>
           </div>
-          <div class="editor-actions" style="margin-top: 20px; display: flex; gap: 160px;">
-            <button id="play-btn" class="btn primary" type="button" >Play</button>
+
+          <div class="editor-actions" style="margin-top: 20px; display: flex; justify-content: space-between;">
+            <button id="play-btn" class="btn primary" type="button">Play</button>
             <button id="save-script-btn" class="btn primary" type="button">Salvar texto</button>
           </div>
         </section>
 
-        <!-- Right Side: Teleprompter Display -->
         <section class="prompter-section panel-glass">
           <div class="prompter-container">
-            <!-- Pointers/Indicators -->
             <div class="focus-indicator left"></div>
             <div class="focus-indicator right"></div>
             
             <div class="prompter-content-wrapper" id="prompter-wrapper">
-              <div id="prompter-text" class="scrolling-text">
-                <!-- Text will be injected here via JS -->
+              <div id="scroll-container">
+                <div id="prompter-text" class="scrolling-text"></div>
+              </div>
+              
+              <div id="slide-container" class="slide-text-container" style="display: none;">
+                <div id="slide-text"></div>
               </div>
             </div>
           </div>
         </section>
-
       </main>
     </div>
 
-    <!-- Permission Modal -->
     <div id="permission-overlay" class="permission-overlay">
       <div class="permission-dialog panel-glass">
         <h2>Permissão Necessária</h2>
@@ -88,10 +141,6 @@
         <button id="grant-permission-btn" class="btn primary">Conceder Permissão</button>
       </div>
     </div>
-
-
-    
-
 
     <script type="module" src="./main.js"></script>
   </body>
